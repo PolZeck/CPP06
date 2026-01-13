@@ -6,11 +6,11 @@
 #    By: pledieu <pledieu@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/29 11:22:46 by pol               #+#    #+#              #
-#    Updated: 2025/12/08 15:45:42 by pledieu          ###   ########.fr        #
+#    Updated: 2026/01/13 09:26:47 by pledieu          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME        := a.out
+NAME        := convert
 
 CXX         := c++
 CXXFLAGS    := -Wall -Wextra -Werror -std=c++98 -Iinc

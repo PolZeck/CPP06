@@ -6,7 +6,7 @@
 /*   By: pledieu <pledieu@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/08 15:50:30 by pledieu           #+#    #+#             */
-/*   Updated: 2025/12/08 15:56:41 by pledieu          ###   ########.fr       */
+/*   Updated: 2026/01/13 09:51:16 by pledieu          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,26 +64,19 @@ ScalarConverter::e_type ScalarConverter::detectType(const std::string& literal)
     return UNKNOWN;
 }
 
-// --- Private Part: Pseudo-Literal Display ---
-
 void ScalarConverter::displayPseudoLiteral(const std::string& literal)
 {
     std::cout << "char: impossible" << std::endl;
     std::cout << "int: impossible" << std::endl;
     
-    // Check if the literal ends with 'f' (Float literal: nanf, +inff, -inff)
-    if (literal[literal.length() - 1] == 'f')
+    if (literal[literal.length() - 1] == 'f' && literal != "inf" && literal != "+inf" && literal != "-inf")
     {
         std::cout << "float: " << literal << std::endl;
-        // Double output: Use the literal without the 'f' suffix
         std::cout << "double: " << literal.substr(0, literal.length() - 1) << std::endl;
     }
-    // Else (Double literal: nan, +inf, -inf)
     else 
     {
-        // Float output: Add 'f' suffix
         std::cout << "float: " << literal << "f" << std::endl;
-        // Double output: Display the literal itself (this is the simplest way to fix +inf)
         std::cout << "double: " << literal << std::endl;
     }
 }
@@ -138,7 +131,7 @@ void ScalarConverter::convertFromInt(int i)
 
 void ScalarConverter::convertFromFloat(float f)
 {
-    // char
+    // 1. Display char
     if (f != f || f < std::numeric_limits<char>::min() || f > std::numeric_limits<char>::max())
         std::cout << "char: impossible" << std::endl;
     else if (!isprint(static_cast<char>(f)))
@@ -146,23 +139,31 @@ void ScalarConverter::convertFromFloat(float f)
     else
         std::cout << "char: '" << static_cast<char>(f) << "'" << std::endl;
 
-    // int
-    if (f != f || f < std::numeric_limits<int>::min() || f > std::numeric_limits<int>::max())
+    // 2. Display int
+    if (f != f || f < static_cast<float>(std::numeric_limits<int>::min()) || f > static_cast<float>(std::numeric_limits<int>::max()))
         std::cout << "int: impossible" << std::endl;
     else
         std::cout << "int: " << static_cast<int>(f) << std::endl;
 
-    // float (Corrected formatting)
-    if (is_integer(f))
-        std::cout << std::fixed << std::setprecision(1);
+    // 3. Display float
+    // If it's an integer, we force .0f [cite: 159, 169]
+    if (is_integer(static_cast<double>(f)))
+        std::cout << "float: " << std::fixed << std::setprecision(1) << f << "f" << std::endl;
     else
-        std::cout << std::setprecision(7); // Default float precision
+        std::cout << "float: " << std::setprecision(std::numeric_limits<float>::digits10) << f << "f" << std::endl;
+    
+    // IMPORTANT: Reset fixed format so it doesn't affect the double output
+    std::cout.unsetf(std::ios::fixed);
 
-    std::cout << "float: " << f << "f" << std::endl;
+    // 4. Display double
+    // We must check if it's an integer again to display .0 [cite: 160, 170]
+    if (is_integer(static_cast<double>(f)))
+        std::cout << "double: " << std::fixed << std::setprecision(1) << static_cast<double>(f) << std::endl;
+    else
+        std::cout << "double: " << std::setprecision(std::numeric_limits<double>::digits10) << static_cast<double>(f) << std::endl;
 
-    // double
-    std::cout << std::setprecision(6); // Reset for double conversion
-    std::cout << "double: " << static_cast<double>(f) << std::endl;
+    // Reset fixed format one last time for future calls
+    std::cout.unsetf(std::ios::fixed);
 }
 
 void ScalarConverter::convertFromDouble(double d)
