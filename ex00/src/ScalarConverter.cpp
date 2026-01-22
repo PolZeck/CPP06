@@ -6,25 +6,36 @@
 /*   By: pledieu <pledieu@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/08 15:50:30 by pledieu           #+#    #+#             */
-/*   Updated: 2026/01/13 09:51:16 by pledieu          ###   ########.fr       */
+/*   Updated: 2026/01/22 11:20:41 by pledieu          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+/**
+ * @file ScalarConverter.cpp
+ * @brief Implementation of the scalar type conversion logic.
+ */
+
 #include "ScalarConverter.hpp"
 #include <iomanip>
-#include <cstdlib> // For strtod, strtof, strtol
-#include <cerrno>  // For errno
+#include <cstdlib>
+#include <cerrno>
 #include <limits>
-#include <cmath>   // For std::modf
+#include <cmath>
 
-// --- Private Part: Constructors and Destructor ---
+/**
+ * @brief Private constructors and assignment operator.
+ * These are private to prevent the utility class from being instantiated.
+ */
 ScalarConverter::ScalarConverter() {}
 ScalarConverter::ScalarConverter(const ScalarConverter& other) { (void)other; }
 ScalarConverter& ScalarConverter::operator=(const ScalarConverter& other) { (void)other; return *this; }
 ScalarConverter::~ScalarConverter() {}
 
-// --- Private Part: Type Detection ---
-
+/**
+ * @brief Identifies the scalar type of the input string.
+ * @param literal The string representation of a literal.
+ * @return The detected e_type (CHAR, INT, FLOAT, DOUBLE, or PSEUDO_LITERAL).
+ */
 ScalarConverter::e_type ScalarConverter::detectType(const std::string& literal)
 {
     // 1. Detect pseudo-literals
@@ -64,6 +75,10 @@ ScalarConverter::e_type ScalarConverter::detectType(const std::string& literal)
     return UNKNOWN;
 }
 
+/**
+ * @brief Handles the display for special pseudo-literals (nan, inf).
+ * These cases ignore char and int conversions as they are "impossible".
+ */
 void ScalarConverter::displayPseudoLiteral(const std::string& literal)
 {
     std::cout << "char: impossible" << std::endl;
@@ -81,57 +96,63 @@ void ScalarConverter::displayPseudoLiteral(const std::string& literal)
     }
 }
 
-// --- Private Part: Conversion Functions (Using static_cast) ---
-
-// Helper function to check if a double value is an integer
+/**
+ * @brief Utility to check if a double has no fractional part.
+ * Helps in formatting output with .0 as shown in the subject examples.
+ */
 bool is_integer(double d) {
     double int_part;
     return std::modf(d, &int_part) == 0.0;
 }
 
+/**
+ * @brief Converts from a detected Char and prints all four types.
+ * Uses static_cast for explicit conversion.
+ */
 void ScalarConverter::convertFromChar(char c)
 {
-    // char
     if (isprint(c))
         std::cout << "char: '" << c << "'" << std::endl;
     else
         std::cout << "char: Non displayable" << std::endl;
     
-    // int
     std::cout << "int: " << static_cast<int>(c) << std::endl;
-
-    // float (Forcing .0f precision as it's an integer value)
     std::cout << std::fixed << std::setprecision(1); 
     std::cout << "float: " << static_cast<float>(c) << "f" << std::endl;
-
-    // double
     std::cout << "double: " << static_cast<double>(c) << std::endl;
 }
 
+/**
+ * @brief Converts from a detected Int and prints all four types.
+ * Checks for char displayability and range.
+ */
 void ScalarConverter::convertFromInt(int i)
 {
-    // char
+    /** * Check if the integer value is within the valid range of a char type.
+         * If the value is too large or too small to fit in a char, conversion is impossible.
+         */
     if (i < std::numeric_limits<char>::min() || i > std::numeric_limits<char>::max())
         std::cout << "char: impossible" << std::endl;
+    /** * If the value fits in a char but is not a printable character (like 0-31 or 127),
+         * we inform the user that it cannot be displayed visually.
+         */
     else if (!isprint(static_cast<char>(i)))
         std::cout << "char: Non displayable" << std::endl;
     else
         std::cout << "char: '" << static_cast<char>(i) << "'" << std::endl;
     
-    // int
     std::cout << "int: " << i << std::endl;
-
-    // float
     std::cout << std::fixed << std::setprecision(1);
     std::cout << "float: " << static_cast<float>(i) << "f" << std::endl;
-
-    // double
     std::cout << "double: " << static_cast<double>(i) << std::endl;
 }
 
+/**
+ * @brief Converts from a detected Float and prints all four types.
+ * Handles overflows and non-sense conversions by printing "impossible".
+ */
 void ScalarConverter::convertFromFloat(float f)
 {
-    // 1. Display char
     if (f != f || f < std::numeric_limits<char>::min() || f > std::numeric_limits<char>::max())
         std::cout << "char: impossible" << std::endl;
     else if (!isprint(static_cast<char>(f)))
@@ -139,36 +160,31 @@ void ScalarConverter::convertFromFloat(float f)
     else
         std::cout << "char: '" << static_cast<char>(f) << "'" << std::endl;
 
-    // 2. Display int
     if (f != f || f < static_cast<float>(std::numeric_limits<int>::min()) || f > static_cast<float>(std::numeric_limits<int>::max()))
         std::cout << "int: impossible" << std::endl;
     else
         std::cout << "int: " << static_cast<int>(f) << std::endl;
 
-    // 3. Display float
-    // If it's an integer, we force .0f [cite: 159, 169]
     if (is_integer(static_cast<double>(f)))
         std::cout << "float: " << std::fixed << std::setprecision(1) << f << "f" << std::endl;
     else
         std::cout << "float: " << std::setprecision(std::numeric_limits<float>::digits10) << f << "f" << std::endl;
     
-    // IMPORTANT: Reset fixed format so it doesn't affect the double output
     std::cout.unsetf(std::ios::fixed);
 
-    // 4. Display double
-    // We must check if it's an integer again to display .0 [cite: 160, 170]
     if (is_integer(static_cast<double>(f)))
         std::cout << "double: " << std::fixed << std::setprecision(1) << static_cast<double>(f) << std::endl;
     else
         std::cout << "double: " << std::setprecision(std::numeric_limits<double>::digits10) << static_cast<double>(f) << std::endl;
 
-    // Reset fixed format one last time for future calls
     std::cout.unsetf(std::ios::fixed);
 }
 
+/**
+ * @brief Converts from a detected Double and prints all four types.
+ */
 void ScalarConverter::convertFromDouble(double d)
 {
-    // char
     if (d != d || d < std::numeric_limits<char>::min() || d > std::numeric_limits<char>::max()) 
         std::cout << "char: impossible" << std::endl;
     else if (!isprint(static_cast<char>(d)))
@@ -176,14 +192,11 @@ void ScalarConverter::convertFromDouble(double d)
     else
         std::cout << "char: '" << static_cast<char>(d) << "'" << std::endl;
 
-    // int
     if (d != d || d < std::numeric_limits<int>::min() || d > std::numeric_limits<int>::max())
         std::cout << "int: impossible" << std::endl;
     else
         std::cout << "int: " << static_cast<int>(d) << std::endl;
 
-    // float
-    // Need to check for float overflow
     if (d != d || d < -std::numeric_limits<float>::max() || d > std::numeric_limits<float>::max())
         std::cout << "float: impossible" << std::endl;
     else
@@ -191,23 +204,25 @@ void ScalarConverter::convertFromDouble(double d)
         if (is_integer(d))
             std::cout << std::fixed << std::setprecision(1);
         else
-            std::cout << std::setprecision(7); // Default float precision
+            std::cout << std::setprecision(7);
         std::cout << "float: " << static_cast<float>(d) << "f" << std::endl;
     }
 
-    // double (Corrected formatting)
     if (is_integer(d))
         std::cout << std::fixed << std::setprecision(1);
     else
-        std::cout << std::setprecision(15); // Default double precision
+        std::cout << std::setprecision(15);
 
     std::cout << "double: " << d << std::endl;
 }
 
-// --- Public Part: The convert method ---
-
+/**
+ * @brief Main entry point for conversion.
+ * Detects the type, parses the string using strtod, and routes to specific conversion functions.
+ */
 void ScalarConverter::convert(const std::string& literal)
 {
+    // 1. Identify what the user typed
     e_type type = detectType(literal);
     
     if (type == UNKNOWN)
@@ -222,19 +237,16 @@ void ScalarConverter::convert(const std::string& literal)
     }
     else if (type == CHAR)
     {
-        // Handle CHAR detection directly to avoid strtod error paths
         convertFromChar(literal[1]); 
         return;
     }
 
-    // Reset errno before conversion
+    // 2. Parse the string into a numeric value safely
     errno = 0;
-    
-    // Use strtod for parsing all numeric types safely in C++98
     char* endptr = NULL;
     double value = std::strtod(literal.c_str(), &endptr);
 
-    // Check for trailing characters after the number (only 'f' is allowed for float input)
+    // 3. Validation: Did the parsing finish? Was it a clean number?
     bool conversion_complete = true;
     if (*endptr != '\0')
     {
@@ -243,38 +255,23 @@ void ScalarConverter::convert(const std::string& literal)
         else
             conversion_complete = false;
     }
-
-
+    // 4. Handle errors like total overflow or garbage text
     if (errno == ERANGE || !conversion_complete)
     {
-        // This handles INT, FLOAT, DOUBLE conversion errors
-        std::cout << "char: impossible" << std::endl;
-        std::cout << "int: impossible" << std::endl;
-        std::cout << "float: impossible" << std::endl;
-        std::cout << "double: impossible" << std::endl;
+        std::cout << "char: impossible\nint: impossible\nfloat: impossible\ndouble: impossible" << std::endl;
         return;
     }
-
+    
+    // 5. Route to the correct conversion logic based on detected type
     if (type == INT)
     {
-        // INT overflow check must happen here before static_cast<int>
         if (value >= std::numeric_limits<int>::min() && value <= std::numeric_limits<int>::max())
             convertFromInt(static_cast<int>(value));
         else
-        {
-            // Custom overflow message for int input
-            std::cout << "char: impossible" << std::endl;
-            std::cout << "int: impossible" << std::endl;
-            std::cout << "float: impossible" << std::endl;
-            std::cout << "double: impossible" << std::endl;
-        }
+            std::cout << "char: impossible\nint: impossible\nfloat: impossible\ndouble: impossible" << std::endl;
     }
     else if (type == FLOAT)
-    {
         convertFromFloat(static_cast<float>(value));
-    }
     else if (type == DOUBLE)
-    {
         convertFromDouble(value);
-    }
 }
