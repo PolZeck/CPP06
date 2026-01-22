@@ -6,7 +6,7 @@
 /*   By: pledieu <pledieu@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 10:42:09 by pledieu           #+#    #+#             */
-/*   Updated: 2026/01/13 10:47:40 by pledieu          ###   ########.fr       */
+/*   Updated: 2026/01/22 12:29:14 by pledieu          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,5 +16,5 @@
 # include "Base.hpp"
 
 class C : public Base {};
-
+ 
 #endif

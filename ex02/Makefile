@@ -6,7 +6,7 @@
 #    By: pledieu <pledieu@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/29 11:22:46 by pol               #+#    #+#              #
-#    Updated: 2025/12/08 15:59:15 by pledieu          ###   ########.fr        #
+#    Updated: 2026/01/22 12:49:19 by pledieu          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,7 @@ CXXFLAGS    := -Wall -Wextra -Werror -std=c++98 -Iinc
 SRC_DIR     := src
 OBJ_DIR     := obj
 
-SRC_FILES   := main.cpp 
+SRC_FILES   := main.cpp Identify.cpp
 SRC         := $(addprefix $(SRC_DIR)/, $(SRC_FILES))
 OBJ         := $(addprefix $(OBJ_DIR)/, $(SRC_FILES:.cpp=.o))
 DEP         := $(OBJ:.o=.d)

@@ -6,7 +6,7 @@
 /*   By: pledieu <pledieu@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/13 10:47:54 by pledieu           #+#    #+#             */
-/*   Updated: 2026/01/13 10:48:02 by pledieu          ###   ########.fr       */
+/*   Updated: 2026/01/22 12:52:18 by pledieu          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,17 @@ void identify(Base* p);
 void identify(Base& p);
 
 int main() {
+    // 1. Seed the random number generator with current time
     std::srand(std::time(0));
 
-    std::cout << "--- Test 1 ---" << std::endl;
+    // --- Test 1 ---
+    // 2. Randomly instantiate A, B, or C and get it as a Base pointer
     Base* p1 = generate();
+    // 3. Identify the real type using the pointer-based function
     std::cout << "Identify via pointer   : "; identify(p1);
+    // 4. Identify the real type using the reference-based function
     std::cout << "Identify via reference : "; identify(*p1);
+    // 5. Free memory (Base has a virtual destructor for this)
     delete p1;
 
     std::cout << std::endl << "--- Test 2 ---" << std::endl;
